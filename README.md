@@ -2,7 +2,7 @@
 This program interprets Oxygen programs (.ox)
 
 ## How to Use
-(Assuming you are in the repo folder)
+(assuming you are in the repo folder)
 ```
 cd src
 py main.py "<file_path>"

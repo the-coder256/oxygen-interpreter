@@ -67,6 +67,7 @@ class Tokeniser:
         inComment = False
         inMLComment = False
         inString = False
+        escaping = False
         stringChars = ""
         
         for index in range(len(content)):
@@ -91,6 +92,13 @@ class Tokeniser:
                     inMLComment = False
                     continue
             elif inComment or inMLComment:
+                continue
+            elif char == "\\" and inString:
+                escaping = True
+                continue
+            elif escaping and inString:
+                escaping = False
+                self.currentToken += char
                 continue
             elif (char == "'" or char == '"') and not inString:
                 self.currentToken = "'"

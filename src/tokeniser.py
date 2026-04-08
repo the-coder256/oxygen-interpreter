@@ -6,7 +6,10 @@ class T_String:
         self.value = value[1:-1]
 class T_Number:
     def __init__(self, value):
-        self.value = value
+        if type(value) == int:
+            self.value = int(value)
+        else:
+            self.value = float(value)
 class T_Boolean:
     def __init__(self, value):
         self.value = value

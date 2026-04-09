@@ -1,6 +1,7 @@
 import sys
 import tokeniser
 import parser
+import evaluator
 
 if len(sys.argv) < 2:
     print("No file given!")
@@ -11,6 +12,4 @@ with open(sys.argv[1], "r") as file:
 
 tokens = tokeniser.Tokeniser().tokenise(content)
 tree = parser.Parser().parse(tokens)
-
-print(tree[0].callee)
-print(tree[0].arguments)
+evaluator.Evaluator().evaluate(tree)

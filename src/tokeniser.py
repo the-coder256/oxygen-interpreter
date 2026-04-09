@@ -3,13 +3,12 @@ class T_Ident:
         self.value = value
 class T_String:
     def __init__(self, value):
-        self.value = value[1:-1]
+        self.value = value[1:]
 class T_Number:
     def __init__(self, value):
-        if type(value) == int:
+        self.value = float(value)
+        if self.value == int(value):
             self.value = int(value)
-        else:
-            self.value = float(value)
 class T_Boolean:
     def __init__(self, value):
         self.value = value

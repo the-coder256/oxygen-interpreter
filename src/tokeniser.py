@@ -33,7 +33,9 @@ class Tokeniser:
         self.index = 0
 
     def getType(self, value):
-        if value[0] == "'":
+        if len(value) == 0:
+            return None
+        elif value[0] == "'":
             return T_String
         elif value == "true" or value == "false":
             return T_Boolean
@@ -62,7 +64,9 @@ class Tokeniser:
             return ""
     
     def appendCurrentToken(self):
-        self.tokens.append(self.createToken(self.getType(self.currentToken), self.currentToken))
+        t_type = self.getType(self.currentToken)
+        if t_type != None:
+            self.tokens.append(self.createToken(t_type, self.currentToken))
 
     def appendTokens(self, extra):
         self.appendCurrentToken()
@@ -75,6 +79,7 @@ class Tokeniser:
         inMLComment = False
         inString = False
         escaping = False
+        parenLayer = 0
         stringChars = ""
         
         for index in range(len(content)):
@@ -118,8 +123,10 @@ class Tokeniser:
                 inString = False
             elif char == "(":
                 self.appendTokens("(")
+                parenLayer += 1
             elif char == ")":
                 self.appendTokens(")")
+                parenLayer -= 1
             elif char == "=":
                 self.appendTokens("=")
             else:
@@ -129,5 +136,16 @@ class Tokeniser:
             self.tokens.append(self.currentToken)
         
         self.tokens.append(T_End("END"))
+
+        if inString:
+            print("Unterminated string")
+            exit(1)
+        
+        if parenLayer < 0:
+            print("Missing '('")
+            exit(1)
+        elif parenLayer > 0:
+            print("Missing ')'")
+            exit(1)
         
         return self.tokens

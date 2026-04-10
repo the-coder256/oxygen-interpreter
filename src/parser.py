@@ -28,11 +28,17 @@ class Parser:
             return self.tokens[self.index + amount]
 
     def consume(self):
-        return self.tokens[self.index]
+        try:
+            return self.tokens[self.index]
+        except:
+            return Null(None)
 
     def advance(self):
         self.index += 1
-        return self.tokens[self.index - 1]
+        try:
+            return self.tokens[self.index - 1]
+        except:
+            return Null(None)
     
     def expect(self, t_type):
         if type(self.tokens[self.index]) != t_type:
@@ -58,7 +64,7 @@ class Parser:
         while self.consume().value != ")":
             arg = self.parse_expr()
 
-            if type(arg) == tokeniser.T_End:
+            if type(arg) == type(None):
                 print("Expected ')'")
                 exit(1)
 

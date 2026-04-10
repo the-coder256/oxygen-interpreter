@@ -21,6 +21,9 @@ class T_RightParen:
 class T_End:
     def __init__(self, value):
         self.value = value
+class T_SingleEquals:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -40,6 +43,8 @@ class Tokeniser:
             return T_LeftParen
         elif value == ")":
             return T_RightParen
+        elif value == "=":
+            return T_SingleEquals
         else:
             try:
                 x = int(value)
@@ -55,9 +60,12 @@ class Tokeniser:
             return self.contents[self.index + amount]
         else:
             return ""
+    
+    def appendCurrentToken(self):
+        self.tokens.append(self.createToken(self.getType(self.currentToken), self.currentToken))
 
     def appendTokens(self, extra):
-        self.tokens.append(self.createToken(self.getType(self.currentToken), self.currentToken))
+        self.appendCurrentToken()
         self.tokens.append(self.createToken(self.getType(extra), extra))
         self.currentToken = ""
 
@@ -75,6 +83,9 @@ class Tokeniser:
 
             if char == "\n":
                 inComment = False
+                if self.currentToken != "":
+                    self.appendCurrentToken()
+                    self.currentToken = ""
                 continue
             elif char == " " and not inString:
                 continue
@@ -109,6 +120,8 @@ class Tokeniser:
                 self.appendTokens("(")
             elif char == ")":
                 self.appendTokens(")")
+            elif char == "=":
+                self.appendTokens("=")
             else:
                 self.currentToken += char
         

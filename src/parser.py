@@ -7,6 +7,13 @@ class Call:
     def __init__(self, callee, arguments):
         self.callee = callee
         self.arguments = arguments
+class Assign:
+    def __init__(self, ident, value):
+        self.ident = ident
+        self.value = value
+class Ident:
+    def __init__(self, name):
+        self.name = name
 
 class Parser:
     def __init__(self):
@@ -34,6 +41,14 @@ class Parser:
 
     def at_end(self):
         return self.consume().value == "END"
+    
+    def parse_expr(self):
+        start_expr = self.advance()
+
+        if type(start_expr) == tokeniser.T_Ident:
+            return Ident(start_expr.value)
+        else:
+            return start_expr.value
 
     def parse_function_call(self):
         callee = self.peek(-1).value
@@ -41,7 +56,7 @@ class Parser:
         self.advance()
 
         while self.consume().value != ")":
-            arg = self.advance().value
+            arg = self.parse_expr()
 
             if type(arg) == tokeniser.T_End:
                 print("Expected ')'")
@@ -51,12 +66,21 @@ class Parser:
         
         self.advance()
         return Call(callee, arguments)
+    
+    def parse_assignment(self):
+        ident = self.peek(-1).value
+        self.advance()
+        value = self.parse_expr()
+
+        return Assign(ident, value)
 
     def parse_stmt(self):
         beginning = self.advance()
 
         if type(self.consume()) == tokeniser.T_LeftParen and type(beginning) == tokeniser.T_Ident:
             return self.parse_function_call()
+        elif type(self.consume()) == tokeniser.T_SingleEquals and type(beginning) == tokeniser.T_Ident:
+            return self.parse_assignment()
 
     def parse(self, tokens):
         self.tokens = tokens

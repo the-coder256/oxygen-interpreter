@@ -14,6 +14,10 @@ class Assign:
 class Ident:
     def __init__(self, name):
         self.name = name
+class IfCondition:
+    def __init__(self, condition, statements):
+        self.condition = condition
+        self.statements = statements
 
 class Parser:
     def __init__(self):
@@ -79,6 +83,22 @@ class Parser:
         value = self.parse_expr()
 
         return Assign(ident, value)
+    
+    def parse_if_condition(self):
+        condition = self.parse_expr()
+        self.advance()
+        statements = []
+
+        while type(self.consume()) != tokeniser.T_RightBrace:
+            stmt = self.parse_stmt()
+
+            if type(stmt) == type(None):
+                print("Expected '}'")
+                exit(1)
+
+            statements.append(stmt)
+        
+        return IfCondition(condition, statements)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -87,6 +107,8 @@ class Parser:
             return self.parse_function_call()
         elif type(self.consume()) == tokeniser.T_SingleEquals and type(beginning) == tokeniser.T_Ident:
             return self.parse_assignment()
+        elif type(beginning) == tokeniser.T_If:
+            return self.parse_if_condition()
 
     def parse(self, tokens):
         self.tokens = tokens

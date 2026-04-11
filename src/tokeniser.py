@@ -24,6 +24,15 @@ class T_End:
 class T_SingleEquals:
     def __init__(self, value):
         self.value = value
+class T_If:
+    def __init__(self, value):
+        self.value = value
+class T_LeftBrace:
+    def __init__(self, value):
+        self.value = value
+class T_RightBrace:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -47,6 +56,12 @@ class Tokeniser:
             return T_RightParen
         elif value == "=":
             return T_SingleEquals
+        elif value == "if":
+            return T_If
+        elif value == "{":
+            return T_LeftBrace
+        elif value == "}":
+            return T_RightBrace
         else:
             try:
                 x = int(value)
@@ -73,13 +88,30 @@ class Tokeniser:
         self.tokens.append(self.createToken(self.getType(extra), extra))
         self.currentToken = ""
 
+    def isCurrentToken(self, check):
+        char = self.contents[self.index]
+
+        if not char == check[0]:
+            return False
+        
+        next = check[1:]
+        for index in range(len(next)):
+            amount = index + 1
+
+            if not self.peek(amount) == next[index]:
+                return False
+        
+        return True
+
     def tokenise(self, content):
         self.contents = content
         inComment = False
         inMLComment = False
         inString = False
         escaping = False
+        garbageEscapingTimes = 0
         parenLayer = 0
+        braceLayer = 0
         stringChars = ""
         
         for index in range(len(content)):
@@ -115,6 +147,9 @@ class Tokeniser:
                 escaping = False
                 self.currentToken += char
                 continue
+            elif garbageEscapingTimes > 0:
+                garbageEscapingTimes -= 1
+                continue
             elif (char == "'" or char == '"') and not inString:
                 self.currentToken = "'"
                 inString = True
@@ -129,6 +164,15 @@ class Tokeniser:
                 parenLayer -= 1
             elif char == "=":
                 self.appendTokens("=")
+            elif self.isCurrentToken("if") and not inString:
+                self.appendTokens("if")
+                garbageEscapingTimes += 1
+            elif char == "{":
+                self.appendTokens("{")
+                braceLayer += 1
+            elif char == "}":
+                self.appendTokens("}")
+                braceLayer -= 1
             else:
                 self.currentToken += char
         
@@ -146,6 +190,13 @@ class Tokeniser:
             exit(1)
         elif parenLayer > 0:
             print("Missing ')'")
+            exit(1)
+        
+        if braceLayer < 0:
+            print("Missing '{'")
+            exit(1)
+        elif braceLayer > 0:
+            print("Missing '}'")
             exit(1)
         
         return self.tokens

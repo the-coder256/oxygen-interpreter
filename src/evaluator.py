@@ -32,6 +32,17 @@ class Evaluator:
                 exit(1)
             else:
                 return value
+        elif t_tree == parser.IfCondition:
+            if not self.is_base_type(tree.condition):
+                condition = self.evaluate_tree(tree.condition)
+            else:
+                condition = tree.condition
+            
+            if condition:
+                for index in range(len(tree.statements)):
+                    stmt = tree.statements[index]
+                    if not self.is_base_type(stmt):
+                        tree.statements[index] = self.evaluate_tree(stmt)
         else:
             return tree
 

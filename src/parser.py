@@ -15,13 +15,17 @@ class Ident:
     def __init__(self, name):
         self.name = name
 class IfCondition:
-    def __init__(self, condition, statements):
+    def __init__(self, condition, statements, else_ = None):
         self.condition = condition
         self.statements = statements
+        self.else_ = else_
 class Definition:
     def __init__(self, name, parameters, statements):
         self.name = name
         self.parameters = parameters
+        self.statements = statements
+class Else:
+    def __init__(self, statements):
         self.statements = statements
 
 class Parser:
@@ -101,7 +105,29 @@ class Parser:
 
             statements.append(stmt)
         
-        return IfCondition(condition, statements)
+        self.advance()
+
+        else_branch = None
+
+        # Attempt to parse an else branch
+        if type(self.consume()) == tokeniser.T_Else:
+            self.advance()
+            self.advance()
+
+            else_statements = []
+
+            while type(self.consume()) != tokeniser.T_RightBrace:
+                stmt = self.parse_stmt()
+
+                if type(stmt) == type(None):
+                    print("Expected '}'")
+                    exit(1)
+                
+                else_statements.append(stmt)
+            
+            else_branch = Else(else_statements)
+
+        return IfCondition(condition, statements, else_branch)
     
     def parse_definition(self):
         name = self.advance()
@@ -138,6 +164,9 @@ class Parser:
         
         self.advance()
         return Definition(name, params, statements)
+    
+    def parse_else(self):
+        pass
 
     def parse_stmt(self):
         beginning = self.advance()

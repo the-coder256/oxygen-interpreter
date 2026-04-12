@@ -36,6 +36,9 @@ class T_RightBrace:
 class T_Define:
     def __init__(self, value):
         self.value = value
+class T_Else:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -65,6 +68,8 @@ class Tokeniser:
             return T_RightBrace
         elif value == "define":
             return T_Define
+        elif value == "else":
+            return T_Else
         else:
             try:
                 x = int(value)
@@ -186,6 +191,9 @@ class Tokeniser:
             elif self.isCurrentToken("define") and not inString:
                 self.appendTokens("define")
                 garbageEscapingTimes += len("define") - 1
+            elif self.isCurrentToken("else") and not inString:
+                self.appendTokens("else")
+                garbageEscapingTimes += len("else") - 1
             else:
                 self.currentToken += char
         

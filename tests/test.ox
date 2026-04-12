@@ -6,10 +6,12 @@ define hello() {
 x = "Hello, world!"    // Sets variable 'x' to Hello, world!
 print(x)               // Prints value of 'x'
 
-if 1 {
+if true {
     print("Hello")
     hello()
     print(x)
+} else {
+    print("Goodbye")
 }
 
 /* print(

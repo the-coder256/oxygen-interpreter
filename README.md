@@ -1,4 +1,4 @@
-# Oxygen Intepreter v0.3
+# Oxygen Intepreter v0.4
 This program interprets Oxygen programs (.ox)
 
 ## How to Use
@@ -15,6 +15,11 @@ py main.py "../tests/test.ox"
 ```
 
 ## Changelogs
+v0.4:
+- Added function definitions
+- Added scopes
+- Other small changes
+
 v0.3:
 - Added if conditions
 - Added more error messages

@@ -18,6 +18,11 @@ class IfCondition:
     def __init__(self, condition, statements):
         self.condition = condition
         self.statements = statements
+class Definition:
+    def __init__(self, name, parameters, statements):
+        self.name = name
+        self.parameters = parameters
+        self.statements = statements
 
 class Parser:
     def __init__(self):
@@ -43,17 +48,15 @@ class Parser:
             return self.tokens[self.index - 1]
         except:
             return Null(None)
-    
-    def expect(self, t_type):
-        if type(self.tokens[self.index]) != t_type:
-            print("Expected token type " + str(t_type) + ", got " + str(type(self.tokens[self.index])))
-            exit(1)
 
     def at_end(self):
         return self.consume().value == "END"
     
-    def parse_expr(self):
-        start_expr = self.advance()
+    def parse_expr(self, start = None):
+        if start == None:
+            start_expr = self.advance()
+        else:
+            start_expr = start
 
         if type(start_expr) == tokeniser.T_Ident:
             return Ident(start_expr.value)
@@ -61,7 +64,7 @@ class Parser:
             return start_expr.value
 
     def parse_function_call(self):
-        callee = self.peek(-1).value
+        callee = self.parse_expr(self.peek(-1))
         arguments = []
         self.advance()
 
@@ -99,6 +102,42 @@ class Parser:
             statements.append(stmt)
         
         return IfCondition(condition, statements)
+    
+    def parse_definition(self):
+        name = self.advance()
+
+        if not type(name) == tokeniser.T_Ident:
+            print("Expected function name, got '" + str(name.value) + "'")
+            exit(1)
+        
+        self.advance()
+        params = []
+
+        while not type(self.consume()) == tokeniser.T_RightParen:
+            param = self.advance()
+
+            if type(param) == type(None):
+                print("Expected ')'")
+                exit(1)
+            
+            params.append(param.value)
+        
+        self.advance()
+        self.advance()
+
+        statements = []
+
+        while not type(self.consume()) == tokeniser.T_RightBrace:
+            stmt = self.parse_stmt()
+
+            if type(stmt) == type(None):
+                print("Expected '}'")
+                exit(1)
+            
+            statements.append(stmt)
+        
+        self.advance()
+        return Definition(name, params, statements)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -109,6 +148,8 @@ class Parser:
             return self.parse_assignment()
         elif type(beginning) == tokeniser.T_If:
             return self.parse_if_condition()
+        elif type(beginning) == tokeniser.T_Define:
+            return self.parse_definition()
 
     def parse(self, tokens):
         self.tokens = tokens

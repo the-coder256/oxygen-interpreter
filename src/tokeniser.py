@@ -33,6 +33,9 @@ class T_LeftBrace:
 class T_RightBrace:
     def __init__(self, value):
         self.value = value
+class T_Define:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -46,8 +49,6 @@ class Tokeniser:
             return None
         elif value[0] == "'":
             return T_String
-        elif value == "true" or value == "false":
-            return T_Boolean
         elif value == "END":
             return T_End
         elif value == "(":
@@ -62,6 +63,8 @@ class Tokeniser:
             return T_LeftBrace
         elif value == "}":
             return T_RightBrace
+        elif value == "define":
+            return T_Define
         else:
             try:
                 x = int(value)
@@ -156,23 +159,33 @@ class Tokeniser:
                 stringChars = char
             elif char == stringChars and inString:
                 inString = False
-            elif char == "(":
+            elif char == "(" and not inString:
                 self.appendTokens("(")
                 parenLayer += 1
-            elif char == ")":
+            elif char == ")" and not inString:
                 self.appendTokens(")")
                 parenLayer -= 1
-            elif char == "=":
+                if parenLayer < 0:
+                    print("No '(' to close")
+                    exit(1)
+            elif char == "=" and not inString:
                 self.appendTokens("=")
             elif self.isCurrentToken("if") and not inString:
                 self.appendTokens("if")
-                garbageEscapingTimes += 1
-            elif char == "{":
+                garbageEscapingTimes += len("if") - 1
+            
+            elif char == "{" and not inString:
                 self.appendTokens("{")
                 braceLayer += 1
-            elif char == "}":
+            elif char == "}" and not inString:
                 self.appendTokens("}")
                 braceLayer -= 1
+                if braceLayer < 0:
+                    print("No '{' to close")
+                    exit(1)
+            elif self.isCurrentToken("define") and not inString:
+                self.appendTokens("define")
+                garbageEscapingTimes += len("define") - 1
             else:
                 self.currentToken += char
         
@@ -185,17 +198,11 @@ class Tokeniser:
             print("Unterminated string")
             exit(1)
         
-        if parenLayer < 0:
-            print("Missing '('")
-            exit(1)
-        elif parenLayer > 0:
+        if parenLayer > 0:
             print("Missing ')'")
             exit(1)
         
-        if braceLayer < 0:
-            print("Missing '{'")
-            exit(1)
-        elif braceLayer > 0:
+        if braceLayer > 0:
             print("Missing '}'")
             exit(1)
         

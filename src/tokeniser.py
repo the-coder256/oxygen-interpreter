@@ -39,6 +39,9 @@ class T_Define:
 class T_Else:
     def __init__(self, value):
         self.value = value
+class T_Comma:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -70,6 +73,8 @@ class Tokeniser:
             return T_Define
         elif value == "else":
             return T_Else
+        elif value == ",":
+            return T_Comma
         else:
             try:
                 x = int(value)
@@ -188,6 +193,8 @@ class Tokeniser:
                 if braceLayer < 0:
                     print("No '{' to close")
                     exit(1)
+            elif char == "," and not inString:
+                self.appendTokens(",")
             elif self.isCurrentToken("define") and not inString:
                 self.appendTokens("define")
                 garbageEscapingTimes += len("define") - 1

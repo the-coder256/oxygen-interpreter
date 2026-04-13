@@ -80,6 +80,11 @@ class Parser:
                 exit(1)
 
             arguments.append(arg)
+            if type(self.consume()) == tokeniser.T_Comma:
+                self.advance()
+                if type(self.consume()) == tokeniser.T_RightParen:
+                    print("Missing call argument after ','")
+                    exit(1)
         
         self.advance()
         return Call(callee, arguments)
@@ -147,6 +152,11 @@ class Parser:
                 exit(1)
             
             params.append(param.value)
+            if type(self.consume()) == tokeniser.T_Comma:
+                self.advance()
+                if type(self.consume()) == tokeniser.T_RightParen:
+                    print("Missing parameter after ','")
+                    exit(1)
         
         self.advance()
         self.advance()
@@ -164,9 +174,6 @@ class Parser:
         
         self.advance()
         return Definition(name, params, statements)
-    
-    def parse_else(self):
-        pass
 
     def parse_stmt(self):
         beginning = self.advance()

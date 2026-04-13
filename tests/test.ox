@@ -7,7 +7,7 @@ x = "Hello, world!"    // Sets variable 'x' to Hello, world!
 print(x)               // Prints value of 'x'
 
 if true {
-    print("Hello")
+    print("Hello", "Hello again")
     hello()
     print(x)
 } else {

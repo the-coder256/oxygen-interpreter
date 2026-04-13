@@ -55,7 +55,7 @@ class Evaluator:
                     try:
                         call_arg = call_args[index]
                     except:
-                        call_arg = None
+                        call_arg = ""
                     self.local_variables.get(self.current_env).set(param_name, call_arg)
                 
                 for index in range(len(definition.statements)):

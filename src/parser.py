@@ -27,6 +27,9 @@ class Definition:
 class Else:
     def __init__(self, statements):
         self.statements = statements
+class Return:
+    def __init__(self, value):
+        self.value = value
 
 class Parser:
     def __init__(self):
@@ -63,11 +66,15 @@ class Parser:
             start_expr = start
 
         if type(start_expr) == tokeniser.T_Ident:
-            return Ident(start_expr.value)
+            if type(self.consume()) == tokeniser.T_LeftParen and not start:
+                return self.parse_function_call()
+            else:
+                return Ident(start_expr.value)
         else:
             return start_expr.value
 
     def parse_function_call(self):
+        # at '('
         callee = self.parse_expr(self.peek(-1))
         arguments = []
         self.advance()
@@ -174,6 +181,10 @@ class Parser:
         
         self.advance()
         return Definition(name, params, statements)
+    
+    def parse_return(self):
+        expr = self.parse_expr()
+        return Return(expr)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -186,6 +197,8 @@ class Parser:
             return self.parse_if_condition()
         elif type(beginning) == tokeniser.T_Define:
             return self.parse_definition()
+        elif type(beginning) == tokeniser.T_Return:
+            return self.parse_return()
 
     def parse(self, tokens):
         self.tokens = tokens

@@ -42,6 +42,9 @@ class T_Else:
 class T_Comma:
     def __init__(self, value):
         self.value = value
+class T_Return:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -75,6 +78,8 @@ class Tokeniser:
             return T_Else
         elif value == ",":
             return T_Comma
+        elif value == "return":   # if value is return, return t_return
+            return T_Return
         else:
             try:
                 x = int(value)
@@ -201,6 +206,9 @@ class Tokeniser:
             elif self.isCurrentToken("else") and not inString:
                 self.appendTokens("else")
                 garbageEscapingTimes += len("else") - 1
+            elif self.isCurrentToken("return") and not inString:
+                self.appendTokens("return")
+                garbageEscapingTimes += len("return") - 1
             else:
                 self.currentToken += char
         

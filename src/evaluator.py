@@ -61,7 +61,16 @@ class Evaluator:
                 for index in range(len(definition.statements)):
                     stmt = definition.statements[index]
                     if not self.is_base_type(stmt):
-                        definition.statements[index] = self.evaluate_tree(stmt)
+                        if type(stmt) == parser.Return:
+                            if not self.is_base_type(stmt.value):
+                                return_value = self.evaluate_tree(stmt.value)
+                            else:
+                                return_value = stmt.value
+                            self.local_variables.pop(self.current_env)
+                            self.current_env = "global"
+                            return return_value
+                        else:
+                            definition.statements[index] = self.evaluate_tree(stmt)
                 
                 self.local_variables.pop(self.current_env)
                 self.current_env = "global"

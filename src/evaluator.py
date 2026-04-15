@@ -109,14 +109,40 @@ class Evaluator:
                 condition = self.evaluate_tree(tree.condition)
             else:
                 condition = tree.condition
-
+            
             if condition:
                 for index in range(len(tree.statements)):
                     stmt = tree.statements[index]
                     if not self.is_base_type(stmt):
                         tree.statements[index] = self.evaluate_tree(stmt)
             else:
-                if tree.else_ != None:
+                if tree.elseif_:
+                    else_ifs = tree.elseif_
+                    else_blocked = False
+                    for elseif in else_ifs:
+                        # get the base condition
+                        if not self.is_base_type(elseif.condition):
+                            c = self.evaluate_tree(elseif.condition)
+                        else:
+                            c = elseif.condition
+                        
+                        # if c then run stmts and block else
+                        if c:
+                            stmts = elseif.statements
+
+                            for i in range(len(stmts)):
+                                s = stmts[i]
+                                if not self.is_base_type(s):
+                                    tree.elseif_[i] = self.evaluate_tree(s)
+
+                            else_blocked = True
+                            break
+                    if tree.else_ and not else_blocked:
+                        for index in range(len(tree.else_.statements)):
+                            else_stmt = tree.else_.statements[index]
+                            if not self.is_base_type(else_stmt):
+                                tree.else_.statements[index] = self.evaluate_tree(else_stmt)
+                elif tree.else_:
                     for index in range(len(tree.else_.statements)):
                         else_stmt = tree.else_.statements[index]
                         if not self.is_base_type(else_stmt):

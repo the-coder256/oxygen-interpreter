@@ -15,9 +15,10 @@ class Ident:
     def __init__(self, name):
         self.name = name
 class IfCondition:
-    def __init__(self, condition, statements, else_ = None):
+    def __init__(self, condition, statements, elseif_ = None, else_ = None):
         self.condition = condition
         self.statements = statements
+        self.elseif_ = elseif_
         self.else_ = else_
 class Definition:
     def __init__(self, name, parameters, statements):
@@ -35,6 +36,10 @@ class BinOp:
         self.op = op
         self.num1 = num1
         self.num2 = num2
+class ElseIf:
+    def __init__(self, condition, statements):
+        self.condition = condition
+        self.statements = statements
 
 math_toks = [
     tokeniser.T_Plus,
@@ -129,6 +134,10 @@ class Parser:
         self.advance()
 
         while self.consume().value != ")":
+            if type(self.consume()) == tokeniser.T_Comma:
+                print("Missing call argument before ','")
+                exit(1)
+            
             arg = self.parse_expr()
 
             if type(arg) == type(None):
@@ -153,6 +162,7 @@ class Parser:
         return Assign(ident, value)
     
     def parse_if_condition(self):
+        # if condition {}
         condition = self.parse_expr()
         self.advance()
         statements = []
@@ -168,7 +178,38 @@ class Parser:
         
         self.advance()
 
+        else_if_branches = []
+
+        # else if condition {}
+        if type(self.advance()) == tokeniser.T_Else:
+            if type(self.consume()) == tokeniser.T_If:
+                self.advance()
+                while True:
+                    c = self.parse_expr()
+                    self.advance()
+
+                    s = []
+
+                    while type(self.consume()) != tokeniser.T_RightBrace:
+                        stmt = self.parse_stmt()
+
+                        if type(stmt) == type(None):
+                            print("Expected '}'")
+                            exit(1)
+
+                        s.append(stmt)
+                    
+                    else_if_branches.append(ElseIf(c, s))
+                    self.advance()
+                    self.advance()
+                    self.advance()
+                    if not (type(self.peek(-2)) == tokeniser.T_Else and type(self.peek(-1)) == tokeniser.T_If):
+                        break
+
         else_branch = None
+
+        if else_if_branches:
+            self.index -= 2
 
         # Attempt to parse an else branch
         if type(self.consume()) == tokeniser.T_Else:
@@ -188,7 +229,7 @@ class Parser:
             
             else_branch = Else(else_statements)
 
-        return IfCondition(condition, statements, else_branch)
+        return IfCondition(condition, statements, else_if_branches, else_branch)
     
     def parse_definition(self):
         name = self.advance()

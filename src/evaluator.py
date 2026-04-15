@@ -1,3 +1,4 @@
+import tokeniser
 import parser
 
 default_variables = {"print": "<built-in function 'print'>",
@@ -24,6 +25,12 @@ class Evaluator:
     def is_base_type(self, value):
         value_type = type(value)
         return value_type == int or value_type == float or value_type == str
+    
+    def num(self, value):
+        new = float(value)
+        if int(value) == new:
+            new = int(value)
+        return new
 
     def evaluate_tree(self, tree):
         t_tree = type(tree)
@@ -121,6 +128,27 @@ class Evaluator:
                 self.global_variables.set(ident, value)
             else:
                 self.local_variables.get(self.current_env).set(ident, value)
+        elif t_tree == parser.BinOp:
+            op = tree.op
+            if not self.is_base_type(tree.num1):
+                left = self.evaluate_tree(tree.num1)
+            else:
+                left = tree.num1
+            if not self.is_base_type(tree.num2):
+                right = self.evaluate_tree(tree.num2)
+            else:
+                right = tree.num2
+            if type(op) == tokeniser.T_Plus:
+                return left + right
+            elif type(op) == tokeniser.T_Minus:
+                return left - right
+            elif type(op) == tokeniser.T_Star:
+                return left * right
+            elif type(op) == tokeniser.T_Slash:
+                return self.num(left / right)
+            else:
+                print("Unknown operator '" + str(op.value) + "'")
+                exit(1)
         else:
             return tree
 

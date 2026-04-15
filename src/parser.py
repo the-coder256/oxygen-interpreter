@@ -30,6 +30,18 @@ class Else:
 class Return:
     def __init__(self, value):
         self.value = value
+class BinOp:
+    def __init__(self, op, num1, num2):
+        self.op = op
+        self.num1 = num1
+        self.num2 = num2
+
+math_toks = [
+    tokeniser.T_Plus,
+    tokeniser.T_Minus,
+    tokeniser.T_Star,
+    tokeniser.T_Slash
+]
 
 class Parser:
     def __init__(self):
@@ -59,7 +71,39 @@ class Parser:
     def at_end(self):
         return self.consume().value == "END"
     
-    def parse_expr(self, start = None):
+    def parse_factor(self):
+        if type(self.consume()) == tokeniser.T_LeftParen:
+            self.advance()
+            expr = self.parse_expr()
+            if type(self.consume()) != tokeniser.T_RightParen:
+                print("Missing ')'")
+                exit(1)
+            return expr
+        else:
+            return self.parse_expr(ignore=True)
+    
+    def parse_term(self):
+        node = self.parse_factor()
+
+        while type(self.consume()) in [tokeniser.T_Star, tokeniser.T_Slash]:
+            op = self.advance()
+            right = self.parse_factor()
+            node = BinOp(op, node, right)
+        
+        return node
+    
+    def parse_math_expr(self):
+        self.index -= 1
+        node = self.parse_term()
+
+        while type(self.consume()) in [tokeniser.T_Plus, tokeniser.T_Minus]:
+            op = self.advance()
+            right = self.parse_term()
+            node = BinOp(op, node, right)
+        
+        return node
+    
+    def parse_expr(self, start = None, ignore = False):
         if start == None:
             start_expr = self.advance()
         else:
@@ -68,10 +112,15 @@ class Parser:
         if type(start_expr) == tokeniser.T_Ident:
             if type(self.consume()) == tokeniser.T_LeftParen and not start:
                 return self.parse_function_call()
+            elif type(self.consume()) in math_toks and not ignore:
+                return self.parse_math_expr()
             else:
                 return Ident(start_expr.value)
         else:
-            return start_expr.value
+            if type(self.consume()) in math_toks and not ignore:
+                return self.parse_math_expr()
+            else:
+                return start_expr.value
 
     def parse_function_call(self):
         # at '('

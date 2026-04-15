@@ -45,6 +45,18 @@ class T_Comma:
 class T_Return:
     def __init__(self, value):
         self.value = value
+class T_Plus:
+    def __init__(self, value):
+        self.value = value
+class T_Minus:
+    def __init__(self, value):
+        self.value = value
+class T_Star:
+    def __init__(self, value):
+        self.value = value
+class T_Slash:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -80,6 +92,14 @@ class Tokeniser:
             return T_Comma
         elif value == "return":   # if value is return, return t_return
             return T_Return
+        elif value == "+":
+            return T_Plus
+        elif value == "-":
+            return T_Minus
+        elif value == "*":
+            return T_Star
+        elif value == "/":
+            return T_Slash
         else:
             try:
                 x = int(value)
@@ -148,6 +168,8 @@ class Tokeniser:
                 if self.peek() == "/":
                     inComment = True
                     continue
+                else:
+                    self.appendTokens("/")
             elif char == "/" and not inComment and not inMLComment and not inString:
                 if self.peek() == "*":
                     inMLComment = True
@@ -209,6 +231,12 @@ class Tokeniser:
             elif self.isCurrentToken("return") and not inString:
                 self.appendTokens("return")
                 garbageEscapingTimes += len("return") - 1
+            elif char == "+" and not inString:
+                self.appendTokens("+")
+            elif char == "-" and not inString:
+                self.appendTokens("-")
+            elif char == "*" and not inString:
+                self.appendTokens("*")
             else:
                 self.currentToken += char
         

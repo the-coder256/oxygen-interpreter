@@ -181,35 +181,36 @@ class Parser:
         else_if_branches = []
 
         # else if condition {}
-        if type(self.advance()) == tokeniser.T_Else:
-            if type(self.consume()) == tokeniser.T_If:
+        if type(self.advance()) == tokeniser.T_Else and type(self.consume()) == tokeniser.T_If:
+            self.advance()
+            while True:
+                c = self.parse_expr()
                 self.advance()
-                while True:
-                    c = self.parse_expr()
-                    self.advance()
 
-                    s = []
+                s = []
 
-                    while type(self.consume()) != tokeniser.T_RightBrace:
-                        stmt = self.parse_stmt()
+                while type(self.consume()) != tokeniser.T_RightBrace:
+                    stmt = self.parse_stmt()
 
-                        if type(stmt) == type(None):
-                            print("Expected '}'")
-                            exit(1)
+                    if type(stmt) == type(None):
+                        print("Expected '}'")
+                        exit(1)
 
-                        s.append(stmt)
+                    s.append(stmt)
                     
-                    else_if_branches.append(ElseIf(c, s))
-                    self.advance()
-                    self.advance()
-                    self.advance()
-                    if not (type(self.peek(-2)) == tokeniser.T_Else and type(self.peek(-1)) == tokeniser.T_If):
-                        break
+                else_if_branches.append(ElseIf(c, s))
+                self.advance()
+                self.advance()
+                self.advance()
+                if not (type(self.peek(-2)) == tokeniser.T_Else and type(self.peek(-1)) == tokeniser.T_If):
+                    break
 
         else_branch = None
 
         if else_if_branches:
             self.index -= 2
+        elif type(self.peek(-1)) == tokeniser.T_Else:
+            self.index -= 1
 
         # Attempt to parse an else branch
         if type(self.consume()) == tokeniser.T_Else:

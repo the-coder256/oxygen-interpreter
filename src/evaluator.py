@@ -109,7 +109,7 @@ class Evaluator:
                 condition = self.evaluate_tree(tree.condition)
             else:
                 condition = tree.condition
-            
+
             if condition:
                 for index in range(len(tree.statements)):
                     stmt = tree.statements[index]
@@ -143,6 +143,7 @@ class Evaluator:
                             if not self.is_base_type(else_stmt):
                                 tree.else_.statements[index] = self.evaluate_tree(else_stmt)
                 elif tree.else_:
+                    print("no")
                     for index in range(len(tree.else_.statements)):
                         else_stmt = tree.else_.statements[index]
                         if not self.is_base_type(else_stmt):

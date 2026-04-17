@@ -40,6 +40,13 @@ class ElseIf:
     def __init__(self, condition, statements):
         self.condition = condition
         self.statements = statements
+class For:
+    def __init__(self, variable, start, end, increment, statements):
+        self.variable = variable
+        self.start = start
+        self.end = end
+        self.increment = increment
+        self.statements = statements
 
 math_toks = [
     tokeniser.T_Plus,
@@ -276,6 +283,43 @@ class Parser:
     def parse_return(self):
         expr = self.parse_expr()
         return Return(expr)
+    
+    def parse_for(self):
+        variable = self.advance().value
+
+        if type(self.consume()) != tokeniser.T_SingleEquals:
+            print("Expected '='")
+            exit(1)
+        
+        self.advance()
+        start = self.parse_expr()
+
+        if type(self.consume()) != tokeniser.T_Comma:
+            print("Expected ','")
+            exit(1)
+        
+        self.advance()
+        end = self.parse_expr()
+
+        increment = 1
+        if type(self.consume()) == tokeniser.T_Comma:
+            self.advance()
+            increment = self.parse_expr()
+        
+        self.advance()
+
+        statements = []
+
+        while type(self.consume()) != tokeniser.T_RightBrace:
+            stmt = self.parse_stmt()
+
+            if type(self.consume()) == type(None):
+                print("Missing '}'")
+                exit(1)
+            
+            statements.append(stmt)
+        
+        return For(variable, start, end, increment, statements)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -290,6 +334,8 @@ class Parser:
             return self.parse_definition()
         elif type(beginning) == tokeniser.T_Return:
             return self.parse_return()
+        elif type(beginning) == tokeniser.T_For:
+            return self.parse_for()
 
     def parse(self, tokens):
         self.tokens = tokens

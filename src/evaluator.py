@@ -31,6 +31,31 @@ class Evaluator:
         if int(value) == new:
             new = int(value)
         return new
+    
+    def assign(self, variable, value):
+        i = variable
+        if not self.is_base_type(value):
+            v = self.evaluate_tree(value)
+        else:
+            v = value
+        if self.current_env == "global":
+            self.global_variables.set(i, v)
+        else:
+            self.local_variables.get(self.current_env).set(i, v)
+    
+    def get(self, name):
+        if self.current_env == "global":
+            value = self.global_variables.get(name)
+        else:
+            value = self.local_variables.get(self.current_env).get(name)
+
+        if value == None:
+            value = self.global_variables.get(name)
+        if value == None:
+            print("Variable '" + str(name) + "' hasn't been assigned a value")
+            exit(1)
+        else:
+            return value
 
     def evaluate_tree(self, tree):
         t_tree = type(tree)
@@ -39,13 +64,15 @@ class Evaluator:
                 callee = self.evaluate_tree(tree.callee)
             else:
                 callee = tree.callee
+            args = []
             for index in range(len(tree.arguments)):
                 arg = tree.arguments[index]
                 if not self.is_base_type(arg):
-                    tree.arguments[index] = self.evaluate_tree(arg)
+                    base_arg = self.evaluate_tree(arg)
+                args.append(base_arg)
             
             if callee == "<built-in function 'print'>":
-                print(*tree.arguments)
+                print(*args)
             else:
                 definition = callee
                 if definition == None:
@@ -65,8 +92,10 @@ class Evaluator:
                         call_arg = ""
                     self.local_variables.get(self.current_env).set(param_name, call_arg)
                 
-                for index in range(len(definition.statements)):
-                    stmt = definition.statements[index]
+                statemts = definition.statements
+
+                for index in range(len(statemts)):
+                    stmt = statemts[index]
                     if not self.is_base_type(stmt):
                         if type(stmt) == parser.Return:
                             if not self.is_base_type(stmt.value):
@@ -77,33 +106,16 @@ class Evaluator:
                             self.current_env = "global"
                             return return_value
                         else:
-                            definition.statements[index] = self.evaluate_tree(stmt)
+                            statemts[index] = self.evaluate_tree(stmt)
                 
                 self.local_variables.pop(self.current_env)
                 self.current_env = "global"
         elif t_tree == parser.Assign:
             ident = tree.ident
-            if not self.is_base_type(tree.value):
-                value = self.evaluate_tree(tree.value)
-            else:
-                value = tree.value
-            if self.current_env == "global":
-                self.global_variables.set(ident, value)
-            else:
-                self.local_variables.get(self.current_env).set(ident, value)
+            value = tree.value
+            self.assign(ident, value)
         elif t_tree == parser.Ident:
-            if self.current_env == "global":
-                value = self.global_variables.get(tree.name)
-            else:
-                value = self.local_variables.get(self.current_env).get(tree.name)
-
-                if value == None:
-                    value = self.global_variables.get(tree.name)
-            if value == None:
-                print("Variable '" + str(tree.name) + "' hasn't been assigned a value")
-                exit(1)
-            else:
-                return value
+            return self.get(tree.name)
         elif t_tree == parser.IfCondition:
             if not self.is_base_type(tree.condition):
                 condition = self.evaluate_tree(tree.condition)
@@ -114,7 +126,7 @@ class Evaluator:
                 for index in range(len(tree.statements)):
                     stmt = tree.statements[index]
                     if not self.is_base_type(stmt):
-                        tree.statements[index] = self.evaluate_tree(stmt)
+                        base_stmt = self.evaluate_tree(stmt)
             else:
                 if tree.elseif_:
                     else_ifs = tree.elseif_
@@ -133,7 +145,7 @@ class Evaluator:
                             for i in range(len(stmts)):
                                 s = stmts[i]
                                 if not self.is_base_type(s):
-                                    tree.elseif_[i] = self.evaluate_tree(s)
+                                    base_stmt = self.evaluate_tree(s)
 
                             else_blocked = True
                             break
@@ -143,11 +155,10 @@ class Evaluator:
                             if not self.is_base_type(else_stmt):
                                 tree.else_.statements[index] = self.evaluate_tree(else_stmt)
                 elif tree.else_:
-                    print("no")
                     for index in range(len(tree.else_.statements)):
                         else_stmt = tree.else_.statements[index]
                         if not self.is_base_type(else_stmt):
-                            tree.else_.statements[index] = self.evaluate_tree(else_stmt)
+                            base_else_stmt = self.evaluate_tree(else_stmt)
         elif t_tree == parser.Definition:
             ident = tree.name.value
             value = tree
@@ -176,6 +187,35 @@ class Evaluator:
             else:
                 print("Unknown operator '" + str(op.value) + "'")
                 exit(1)
+        elif t_tree == parser.For:
+            variable = tree.variable
+
+            if not self.is_base_type(tree.start):
+                start = self.evaluate_tree(tree.start)
+            else:
+                start = tree.start
+            if not self.is_base_type(tree.end):
+                end = self.evaluate_tree(tree.end)
+            else:
+                end = tree.end
+            if not self.is_base_type(tree.increment):
+                increment = self.evaluate_tree(tree.increment)
+            else:
+                increment = tree.increment
+
+            statements = tree.statements
+
+            self.assign(variable, start)
+
+            while self.get(variable) < end + 1:
+                # Evaluate all expressions (single iteration)
+                for idx in range(len(statements)):
+                    st = tree.statements[idx]
+                    if not self.is_base_type(st):
+                        base_stmt = self.evaluate_tree(st)
+
+                # Increment the variable thing
+                self.assign(variable, self.get(variable) + increment)
         else:
             return tree
 

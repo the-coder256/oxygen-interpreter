@@ -57,6 +57,9 @@ class T_Star:
 class T_Slash:
     def __init__(self, value):
         self.value = value
+class T_For:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -100,6 +103,8 @@ class Tokeniser:
             return T_Star
         elif value == "/":
             return T_Slash
+        elif value == "for":
+            return T_For
         else:
             try:
                 x = int(value)
@@ -237,6 +242,9 @@ class Tokeniser:
                 self.appendTokens("-")
             elif char == "*" and not inString:
                 self.appendTokens("*")
+            elif self.isCurrentToken("for") and not inString:
+                self.appendTokens("for")
+                garbageEscapingTimes += len("for") - 1
             else:
                 self.currentToken += char
         

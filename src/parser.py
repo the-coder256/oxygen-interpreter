@@ -112,7 +112,9 @@ class Parser:
         
         return node
     
-    def parse_math_expr(self):
+    def parse_math_expr(self, direct = False):
+        if direct:
+            self.index -= 1
         node = self.parse_term()
 
         while type(self.consume()) in [tokeniser.T_Plus, tokeniser.T_Minus]:
@@ -145,14 +147,14 @@ class Parser:
             elif type(self.consume()) in bool_expr_toks and not ignore:
                 return self.parse_bool_expr()
             elif type(self.consume()) in math_toks and not ignore:
-                return self.parse_math_expr()
+                return self.parse_math_expr(direct = True)
             else:
                 return Ident(start_expr.value)
         else:
             if type(self.consume()) in bool_expr_toks and not ignore:
                 return self.parse_bool_expr()
             elif type(self.consume()) in math_toks and not ignore:
-                return self.parse_math_expr()
+                return self.parse_math_expr(direct = True)
             else:
                 return start_expr.value
 

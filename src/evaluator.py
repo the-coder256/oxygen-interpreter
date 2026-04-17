@@ -65,10 +65,13 @@ class Evaluator:
             else:
                 callee = tree.callee
             args = []
+            base_arg = ""
             for index in range(len(tree.arguments)):
                 arg = tree.arguments[index]
                 if not self.is_base_type(arg):
                     base_arg = self.evaluate_tree(arg)
+                else:
+                    base_arg = arg
                 args.append(base_arg)
             
             if callee == "<built-in function 'print'>":
@@ -93,9 +96,10 @@ class Evaluator:
                     self.local_variables.get(self.current_env).set(param_name, call_arg)
                 
                 statemts = definition.statements
+                base_stmt = ""
 
-                for index in range(len(statemts)):
-                    stmt = statemts[index]
+                for index in range(len(definition.statements)):
+                    stmt = definition.statements[index]
                     if not self.is_base_type(stmt):
                         if type(stmt) == parser.Return:
                             if not self.is_base_type(stmt.value):
@@ -106,7 +110,7 @@ class Evaluator:
                             self.current_env = "global"
                             return return_value
                         else:
-                            statemts[index] = self.evaluate_tree(stmt)
+                            base_stmt = self.evaluate_tree(stmt)
                 
                 self.local_variables.pop(self.current_env)
                 self.current_env = "global"

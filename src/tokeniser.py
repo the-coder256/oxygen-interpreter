@@ -60,6 +60,21 @@ class T_Slash:
 class T_For:
     def __init__(self, value):
         self.value = value
+class T_DoubleEquals:
+    def __init__(self, value):
+        self.value = value
+class T_Less:
+    def __init__(self, value):
+        self.value = value
+class T_Greater:
+    def __init__(self, value):
+        self.value = value
+class T_LessEquals:
+    def __init__(self, value):
+        self.value = value
+class T_GreaterEquals:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -105,6 +120,16 @@ class Tokeniser:
             return T_Slash
         elif value == "for":
             return T_For
+        elif value == "==":
+            return T_DoubleEquals
+        elif value == "<":
+            return T_Less
+        elif value == ">":
+            return T_Greater
+        elif value == "<=":
+            return T_LessEquals
+        elif value == ">=":
+            return T_GreaterEquals
         else:
             try:
                 x = int(value)
@@ -211,7 +236,11 @@ class Tokeniser:
                     print("No '(' to close")
                     exit(1)
             elif char == "=" and not inString:
-                self.appendTokens("=")
+                if self.peek() == "=":
+                    self.appendTokens("==")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens("=")
             elif self.isCurrentToken("if") and not inString:
                 self.appendTokens("if")
                 garbageEscapingTimes += len("if") - 1
@@ -245,6 +274,18 @@ class Tokeniser:
             elif self.isCurrentToken("for") and not inString:
                 self.appendTokens("for")
                 garbageEscapingTimes += len("for") - 1
+            elif char == "<" and not inString:
+                if self.peek() == "=":
+                    self.appendTokens("<=")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens("<")
+            elif char == ">" and not inString:
+                if self.peek() == "=":
+                    self.appendTokens(">=")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens(">")
             else:
                 self.currentToken += char
         

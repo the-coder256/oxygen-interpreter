@@ -55,6 +55,14 @@ math_toks = [
     tokeniser.T_Slash
 ]
 
+bool_expr_toks = [
+    tokeniser.T_DoubleEquals,
+    tokeniser.T_Less,
+    tokeniser.T_Greater,
+    tokeniser.T_LessEquals,
+    tokeniser.T_GreaterEquals
+]
+
 class Parser:
     def __init__(self):
         self.tokens = []
@@ -105,12 +113,22 @@ class Parser:
         return node
     
     def parse_math_expr(self):
-        self.index -= 1
         node = self.parse_term()
 
         while type(self.consume()) in [tokeniser.T_Plus, tokeniser.T_Minus]:
             op = self.advance()
             right = self.parse_term()
+            node = BinOp(op, node, right)
+        
+        return node
+    
+    def parse_bool_expr(self):
+        self.index -= 1
+        node = self.parse_math_expr()
+
+        while type(self.consume()) in bool_expr_toks:
+            op = self.advance()
+            right = self.parse_math_expr()
             node = BinOp(op, node, right)
         
         return node
@@ -124,12 +142,16 @@ class Parser:
         if type(start_expr) == tokeniser.T_Ident:
             if type(self.consume()) == tokeniser.T_LeftParen and not start:
                 return self.parse_function_call()
+            elif type(self.consume()) in bool_expr_toks and not ignore:
+                return self.parse_bool_expr()
             elif type(self.consume()) in math_toks and not ignore:
                 return self.parse_math_expr()
             else:
                 return Ident(start_expr.value)
         else:
-            if type(self.consume()) in math_toks and not ignore:
+            if type(self.consume()) in bool_expr_toks and not ignore:
+                return self.parse_bool_expr()
+            elif type(self.consume()) in math_toks and not ignore:
                 return self.parse_math_expr()
             else:
                 return start_expr.value

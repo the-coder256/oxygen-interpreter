@@ -188,6 +188,16 @@ class Evaluator:
                 return left * right
             elif type(op) == tokeniser.T_Slash:
                 return self.num(left / right)
+            elif type(op) == tokeniser.T_DoubleEquals:
+                return int(left == right)
+            elif type(op) == tokeniser.T_Less:
+                return int(left < right)
+            elif type(op) == tokeniser.T_Greater:
+                return int(left > right)
+            elif type(op) == tokeniser.T_LessEquals:
+                return int(left <= right)
+            elif type(op) == tokeniser.T_GreaterEquals:
+                return int(left >= right)
             else:
                 print("Unknown operator '" + str(op.value) + "'")
                 exit(1)

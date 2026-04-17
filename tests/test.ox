@@ -4,18 +4,17 @@ define hello() {
     return x
 }
 
-x = "Hello, world!"    // Sets variable 'x' to Hello, world!
+x = 2                  // Sets variable 'x' to 2
 print(x)               // Prints value of 'x'
 
-if true {
-    print(hello())
-    print(x)
-} else if false {
-    print("Else if 1")
-} else if true {
-    print("Else if 2")
+if x == 1 {
+    print("x is 1")
+} else if x == 2 {
+    print("x is 2")
+} else if x == 3 {
+    print("x is 3")
 } else {
-    print("Goodbye")
+    print("x is not 1, 2 or 3")
 }
 
 /* print(

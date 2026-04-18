@@ -75,6 +75,15 @@ class T_LessEquals:
 class T_GreaterEquals:
     def __init__(self, value):
         self.value = value
+class T_While:
+    def __init__(self, value):
+        self.value = value
+class T_Break:
+    def __init__(self, value):
+        self.value = value
+class T_Continue:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -130,6 +139,12 @@ class Tokeniser:
             return T_LessEquals
         elif value == ">=":
             return T_GreaterEquals
+        elif value == "while":
+            return T_While
+        elif value == "break":
+            return T_Break
+        elif value == "continue":
+            return T_Continue
         else:
             try:
                 x = int(value)
@@ -286,6 +301,15 @@ class Tokeniser:
                     garbageEscapingTimes += 1
                 else:
                     self.appendTokens(">")
+            elif self.isCurrentToken("while") and not inString:
+                self.appendTokens("while")
+                garbageEscapingTimes += len("while") - 1
+            elif self.isCurrentToken("break") and not inString:
+                self.appendTokens("break")
+                garbageEscapingTimes += len("break") - 1
+            elif self.isCurrentToken("continue") and not inString:
+                self.appendTokens("continue")
+                garbageEscapingTimes += len("continue") - 1
             else:
                 self.currentToken += char
         

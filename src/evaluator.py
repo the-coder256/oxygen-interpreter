@@ -220,16 +220,43 @@ class Evaluator:
             statements = tree.statements
 
             self.assign(variable, start)
+            break_for = False
 
             while self.get(variable) < end + 1:
                 # Evaluate all expressions (single iteration)
                 for idx in range(len(statements)):
                     st = tree.statements[idx]
                     if not self.is_base_type(st):
-                        base_stmt = self.evaluate_tree(st)
+                        if type(st) == parser.Break:
+                            break_for = True
+                            break
+                        elif type(st) == parser.Continue:
+                            self.assign(variable, self.get(variable) + increment)
+                            break
+                        else:
+                            base_stmt = self.evaluate_tree(st)
+                
+                if break_for:
+                    break_for = True
+                    break
 
                 # Increment the variable thing
                 self.assign(variable, self.get(variable) + increment)
+        elif t_tree == parser.While:
+            break_while = False
+            while self.evaluate_tree(tree.condition):
+                for stmt in tree.statements:
+                    if not self.is_base_type(stmt):
+                        if type(stmt) == parser.Break:
+                            break_while = True
+                            break
+                        elif type(stmt) == parser.Continue:
+                            break
+                        else:
+                            self.evaluate_tree(stmt)
+                if break_while:
+                    break_while = False
+                    break
         else:
             return tree
 

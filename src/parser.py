@@ -47,6 +47,14 @@ class For:
         self.end = end
         self.increment = increment
         self.statements = statements
+class While:
+    def __init__(self, condition, statements):
+        self.condition = condition
+        self.statements = statements
+class Break:
+    pass
+class Continue:
+    pass
 
 math_toks = [
     tokeniser.T_Plus,
@@ -344,6 +352,21 @@ class Parser:
             statements.append(stmt)
         
         return For(variable, start, end, increment, statements)
+    
+    def parse_while(self):
+        condition = self.parse_expr()
+        self.advance()
+        statements = []
+
+        while type(self.consume()) != tokeniser.T_RightBrace:
+            stmt = self.parse_stmt()
+
+            if type(stmt) == type(None):
+                print("Missing '}'")
+            
+            statements.append(stmt)
+        
+        return While(condition, statements)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -360,6 +383,12 @@ class Parser:
             return self.parse_return()
         elif type(beginning) == tokeniser.T_For:
             return self.parse_for()
+        elif type(beginning) == tokeniser.T_While:
+            return self.parse_while()
+        elif type(beginning) == tokeniser.T_Break:
+            return Break()
+        elif type(beginning) == tokeniser.T_Continue:
+            return Continue()
 
     def parse(self, tokens):
         self.tokens = tokens

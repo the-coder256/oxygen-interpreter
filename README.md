@@ -1,4 +1,4 @@
-# Oxygen Intepreter v0.11
+# Oxygen Intepreter v0.12
 This program interprets Oxygen programs (.ox)
 
 ## How to Use
@@ -20,6 +20,10 @@ py main.py --version
 ```
 
 ## Changelogs
+v0.12:
+- Added while
+- Added break and continue
+
 v0.11:
 - Added conditional operators (==, <, >, <=, >=)
 

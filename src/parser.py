@@ -55,6 +55,17 @@ class Break:
     pass
 class Continue:
     pass
+class CompoundBinOp:
+    def __init__(self, op, ident, value):
+        self.op = op
+        self.ident = ident
+        self.value = value
+class Increment:
+    def __init__(self, ident):
+        self.ident = ident
+class Decrement:
+    def __init__(self, ident):
+        self.ident = ident
 
 math_toks = [
     tokeniser.T_Plus,
@@ -69,6 +80,13 @@ bool_expr_toks = [
     tokeniser.T_Greater,
     tokeniser.T_LessEquals,
     tokeniser.T_GreaterEquals
+]
+
+compound_toks = [
+    tokeniser.T_PlusEquals,
+    tokeniser.T_MinusEquals,
+    tokeniser.T_StarEquals,
+    tokeniser.T_SlashEquals
 ]
 
 class Parser:
@@ -367,6 +385,23 @@ class Parser:
             statements.append(stmt)
         
         return While(condition, statements)
+    
+    def parse_compound_operator(self):
+        ident = self.peek(-1)
+        operator = self.advance()
+        expr = self.parse_expr()
+
+        return CompoundBinOp(operator, ident, expr)
+    
+    def parse_increment(self):
+        ident = self.peek(-1)
+        self.advance()
+        return Increment(ident)
+    
+    def parse_decrement(self):
+        ident = self.peek(-1)
+        self.advance()
+        return Decrement(ident)
 
     def parse_stmt(self):
         beginning = self.advance()
@@ -389,6 +424,12 @@ class Parser:
             return Break()
         elif type(beginning) == tokeniser.T_Continue:
             return Continue()
+        elif type(self.consume()) in compound_toks and type(beginning) == tokeniser.T_Ident:
+            return self.parse_compound_operator()
+        elif type(self.consume()) == tokeniser.T_DoublePlus and type(beginning) == tokeniser.T_Ident:
+            return self.parse_increment()
+        elif type(self.consume()) == tokeniser.T_DoubleMinus and type(beginning) == tokeniser.T_Ident:
+            return self.parse_decrement()
 
     def parse(self, tokens):
         self.tokens = tokens

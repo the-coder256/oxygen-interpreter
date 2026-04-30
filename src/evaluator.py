@@ -257,6 +257,28 @@ class Evaluator:
                 if break_while:
                     break_while = False
                     break
+        elif t_tree == parser.CompoundBinOp:   # x += 3
+            ident = tree.ident.value
+            operator = tree.op
+            if self.is_base_type(tree.value):
+                expr = self.evaluate_tree(tree.value)
+            else:
+                expr = tree.value
+            if type(operator) == tokeniser.T_PlusEquals:
+                self.assign(ident, self.get(ident) + expr)
+            elif type(operator) == tokeniser.T_MinusEquals:
+                self.assign(ident, self.get(ident) - expr)
+            elif type(operator) == tokeniser.T_StarEquals:
+                self.assign(ident, self.get(ident) * expr)
+            elif type(operator) == tokeniser.T_SlashEquals:
+                self.assign(ident, self.get(ident) / expr)
+
+        elif t_tree == parser.Increment:
+            ident = tree.ident.value
+            self.assign(ident, self.get(ident) + 1)
+        elif t_tree == parser.Decrement:
+            ident = tree.ident.value
+            self.assign(ident, self.get(ident) - 1)
         else:
             return tree
 

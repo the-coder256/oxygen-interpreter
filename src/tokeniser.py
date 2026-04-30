@@ -84,6 +84,24 @@ class T_Break:
 class T_Continue:
     def __init__(self, value):
         self.value = value
+class T_PlusEquals:
+    def __init__(self, value):
+        self.value = value
+class T_MinusEquals:
+    def __init__(self, value):
+        self.value = value
+class T_StarEquals:
+    def __init__(self, value):
+        self.value = value
+class T_SlashEquals:
+    def __init__(self, value):
+        self.value = value
+class T_DoublePlus:
+    def __init__(self, value):
+        self.value = value
+class T_DoubleMinus:
+    def __init__(self, value):
+        self.value = value
 
 class Tokeniser:
     def __init__(self):
@@ -145,6 +163,18 @@ class Tokeniser:
             return T_Break
         elif value == "continue":
             return T_Continue
+        elif value == "+=":
+            return T_PlusEquals
+        elif value == "-=":
+            return T_MinusEquals
+        elif value == "*=":
+            return T_StarEquals
+        elif value == "/=":
+            return T_SlashEquals
+        elif value == "++":
+            return T_DoublePlus
+        elif value == "--":
+            return T_DoubleMinus
         else:
             try:
                 x = int(value)
@@ -213,6 +243,9 @@ class Tokeniser:
                 if self.peek() == "/":
                     inComment = True
                     continue
+                elif self.peek() == "=":
+                    self.appendTokens("/=")
+                    garbageEscapingTimes += 1
                 else:
                     self.appendTokens("/")
             elif char == "/" and not inComment and not inMLComment and not inString:
@@ -281,11 +314,29 @@ class Tokeniser:
                 self.appendTokens("return")
                 garbageEscapingTimes += len("return") - 1
             elif char == "+" and not inString:
-                self.appendTokens("+")
+                if self.peek() == "=":
+                    self.appendTokens("+=")
+                    garbageEscapingTimes += 1
+                elif self.peek() == "+":
+                    self.appendTokens("++")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens("+")
             elif char == "-" and not inString:
-                self.appendTokens("-")
+                if self.peek() == "=":
+                    self.appendTokens("-=")
+                    garbageEscapingTimes += 1
+                elif self.peek() == "-":
+                    self.appendTokens("--")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens("-")
             elif char == "*" and not inString:
-                self.appendTokens("*")
+                if self.peek() == "=":
+                    self.appendTokens("*=")
+                    garbageEscapingTimes += 1
+                else:
+                    self.appendTokens("*")
             elif self.isCurrentToken("for") and not inString:
                 self.appendTokens("for")
                 garbageEscapingTimes += len("for") - 1
